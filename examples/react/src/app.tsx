@@ -6,13 +6,67 @@ import { useMemo } from "react";
 import { Input } from "./input";
 import classnames from "classnames";
 import { Item } from "./item";
+import { Id } from "../convex/_generated/dataModel";
+import { OptimisticUpdate } from "convex/browser";
+
+const addItemOptimisticUpdate: OptimisticUpdate<{ title: string }> = (
+  localStore,
+  args,
+) => {
+  const currentValue = localStore.getQuery(api.todo.listItems);
+  if (currentValue !== undefined) {
+    localStore.setQuery(api.todo.listItems, {}, [
+      ...currentValue,
+      {
+        _id: `${Date.now()}` as Id<"todos">,
+        _creationTime: Date.now(),
+        title: args.title,
+        completed: false,
+      },
+    ]);
+  }
+};
+
+const removeCompletedOptimisticUpdate: OptimisticUpdate<{}> = (localStore) => {
+  const currentValue = localStore.getQuery(api.todo.listItems);
+  if (currentValue !== undefined) {
+    localStore.setQuery(
+      api.todo.listItems,
+      {},
+      currentValue.filter((todo) => !todo.completed),
+    );
+  }
+};
+
+const toggleAllOptimisticUpdate: OptimisticUpdate<{ completed: boolean }> = (
+  localStore,
+  args,
+) => {
+  const currentValue = localStore.getQuery(api.todo.listItems);
+  if (currentValue !== undefined) {
+    localStore.setQuery(
+      api.todo.listItems,
+      {},
+      currentValue.map((todo) => ({
+        ...todo,
+        completed: args.completed,
+      })),
+    );
+  }
+};
 
 export function App() {
   const { pathname: route } = useLocation();
   const todos = useQuery(api.todo.listItems) || [];
-  const addItem = useMutation(api.todo.addItem);
-  const removeCompleted = useMutation(api.todo.removeCompleted);
-  const toggleAll = useMutation(api.todo.toggleAll);
+  const addItem = useMutation(api.todo.addItem).withOptimisticUpdate(
+    addItemOptimisticUpdate,
+  );
+  const removeCompleted = useMutation(
+    api.todo.removeCompleted,
+  ).withOptimisticUpdate(removeCompletedOptimisticUpdate);
+  const toggleAll = useMutation(api.todo.toggleAll).withOptimisticUpdate(
+    toggleAllOptimisticUpdate,
+  );
 
   const visibleTodos = useMemo(
     () =>
