@@ -2,7 +2,7 @@ import { render } from "react-dom";
 import { HashRouter, Route, Routes } from "react-router-dom";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 
-import { App } from "./todo/app";
+import { App } from "./app";
 import "todomvc-app-css/index.css";
 
 const convex = new ConvexReactClient(process.env.CONVEX_URL);
