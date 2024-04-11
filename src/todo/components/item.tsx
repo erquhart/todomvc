@@ -3,24 +3,15 @@ import classnames from "classnames";
 
 import { Input } from "./input";
 
-import { TOGGLE_ITEM, REMOVE_ITEM, UPDATE_ITEM } from "../constants";
+import { useMutation } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 
-export const Item = memo(function Item({ todo, dispatch }) {
+export const Item = memo(function Item({ todo }: { todo: any }) {
   const [isWritable, setIsWritable] = useState(false);
-  const { title, completed, id } = todo;
 
-  const toggleItem = useCallback(
-    () => dispatch({ type: TOGGLE_ITEM, payload: { id } }),
-    [dispatch],
-  );
-  const removeItem = useCallback(
-    () => dispatch({ type: REMOVE_ITEM, payload: { id } }),
-    [dispatch],
-  );
-  const updateItem = useCallback(
-    (id, title) => dispatch({ type: UPDATE_ITEM, payload: { id, title } }),
-    [dispatch],
-  );
+  const toggleItem = useMutation(api.todo.toggleItem);
+  const removeItem = useMutation(api.todo.removeItem);
+  const updateItem = useMutation(api.todo.updateItem);
 
   const handleDoubleClick = useCallback(() => {
     setIsWritable(true);
@@ -31,13 +22,13 @@ export const Item = memo(function Item({ todo, dispatch }) {
   }, []);
 
   const handleUpdate = useCallback(
-    (title) => {
-      if (title.length === 0) removeItem(id);
-      else updateItem(id, title);
+    (title: string) => {
+      if (title.length === 0) removeItem({ id: todo._id });
+      else updateItem({ id: todo._id, title });
 
       setIsWritable(false);
     },
-    [id, removeItem, updateItem],
+    [todo._id, removeItem, updateItem],
   );
 
   return (
@@ -50,7 +41,7 @@ export const Item = memo(function Item({ todo, dispatch }) {
           <Input
             onSubmit={handleUpdate}
             label="Edit Todo Input"
-            defaultValue={title}
+            defaultValue={todo.title}
             onBlur={handleBlur}
           />
         ) : (
@@ -59,19 +50,19 @@ export const Item = memo(function Item({ todo, dispatch }) {
               className="toggle"
               type="checkbox"
               data-testid="todo-item-toggle"
-              checked={completed}
-              onChange={toggleItem}
+              checked={todo.completed}
+              onChange={() => toggleItem({ id: todo._id })}
             />
             <label
               data-testid="todo-item-label"
               onDoubleClick={handleDoubleClick}
             >
-              {title}
+              {todo.title}
             </label>
             <button
               className="destroy"
               data-testid="todo-item-button"
-              onClick={removeItem}
+              onClick={() => removeItem({ id: todo._id })}
             />
           </>
         )}

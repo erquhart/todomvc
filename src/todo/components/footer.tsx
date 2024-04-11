@@ -1,21 +1,19 @@
 import { useCallback, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import classnames from "classnames";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 
-import { REMOVE_COMPLETED_ITEMS } from "../constants";
-
-export function Footer({ todos, dispatch }) {
+export function Footer() {
   const { pathname: route } = useLocation();
+  const todos = useQuery(api.todo.listItems) || [];
 
   const activeTodos = useMemo(
     () => todos.filter((todo) => !todo.completed),
     [todos],
   );
 
-  const removeCompleted = useCallback(
-    () => dispatch({ type: REMOVE_COMPLETED_ITEMS }),
-    [dispatch],
-  );
+  const removeCompleted = useMutation(api.todo.removeCompleted);
 
   // prettier-ignore
   if (todos.length === 0)
@@ -50,7 +48,7 @@ export function Footer({ todos, dispatch }) {
       <button
         className="clear-completed"
         disabled={activeTodos.length === todos.length}
-        onClick={removeCompleted}
+        onClick={() => removeCompleted()}
       >
         Clear completed
       </button>
