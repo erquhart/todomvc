@@ -7,7 +7,7 @@ module.exports = {
     app: path.resolve(__dirname, "src", "index.tsx"),
   },
   plugins: [
-    new webpack.EnvironmentPlugin(['CONVEX_DEPLOYMENT', 'CONVEX_URL']),
+    new webpack.EnvironmentPlugin(['CONVEX_DEPLOYMENT', 'CONVEX_URL', 'CLERK_PUBLISHABLE_KEY', 'CLERK_ISSUER_URL']),
     new HtmlWebpackPlugin({
       title: "TodoMVC: React",
       template: path.resolve(__dirname, "public", "index.html"),
@@ -16,6 +16,7 @@ module.exports = {
   output: {
     filename: "[name].bundle.js",
     path: path.resolve(__dirname, "dist"),
+    publicPath: "/",
     clean: true,
   },
   resolve: {

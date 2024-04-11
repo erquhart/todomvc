@@ -22,3 +22,26 @@ but useful for people who use screen readers */
 .toggle-all-label {
   pointer-events: none;
 }
+
+.logout-button {
+  position: absolute;
+  top: -48px;
+  right: 12px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.logout-button:hover {
+  text-decoration: underline;
+}
+
+.login-container,
+.auth-loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.auth-loading-container {
+  padding-top: 8rem;
+}
