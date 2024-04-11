@@ -1,154 +1,44 @@
-import { useMutation, useQuery } from "convex/react";
+import { AuthLoading, Authenticated, Unauthenticated } from "convex/react";
+import { Main } from "./main";
 import "./app.css";
+import { SignIn, SignUp } from "@clerk/clerk-react";
 import { useLocation } from "react-router-dom";
-import { api } from "../convex/_generated/api";
-import { useMemo } from "react";
-import { Input } from "./input";
-import classnames from "classnames";
-import { Item } from "./item";
-import { Id } from "../convex/_generated/dataModel";
-import { OptimisticUpdate } from "convex/browser";
-
-const addItemOptimisticUpdate: OptimisticUpdate<{ title: string }> = (
-  localStore,
-  args,
-) => {
-  const currentValue = localStore.getQuery(api.todo.listItems);
-  if (currentValue !== undefined) {
-    localStore.setQuery(api.todo.listItems, {}, [
-      ...currentValue,
-      {
-        _id: `${Date.now()}` as Id<"todos">,
-        _creationTime: Date.now(),
-        title: args.title,
-        completed: false,
-      },
-    ]);
-  }
-};
-
-const removeCompletedOptimisticUpdate: OptimisticUpdate<{}> = (localStore) => {
-  const currentValue = localStore.getQuery(api.todo.listItems);
-  if (currentValue !== undefined) {
-    localStore.setQuery(
-      api.todo.listItems,
-      {},
-      currentValue.filter((todo) => !todo.completed),
-    );
-  }
-};
-
-const toggleAllOptimisticUpdate: OptimisticUpdate<{ completed: boolean }> = (
-  localStore,
-  args,
-) => {
-  const currentValue = localStore.getQuery(api.todo.listItems);
-  if (currentValue !== undefined) {
-    localStore.setQuery(
-      api.todo.listItems,
-      {},
-      currentValue.map((todo) => ({
-        ...todo,
-        completed: args.completed,
-      })),
-    );
-  }
-};
+import { SpinnerCircularFixed } from "spinners-react";
 
 export function App() {
-  const { pathname: route } = useLocation();
-  const todos = useQuery(api.todo.listItems) || [];
-  const addItem = useMutation(api.todo.addItem).withOptimisticUpdate(
-    addItemOptimisticUpdate,
-  );
-  const removeCompleted = useMutation(
-    api.todo.removeCompleted,
-  ).withOptimisticUpdate(removeCompletedOptimisticUpdate);
-  const toggleAll = useMutation(api.todo.toggleAll).withOptimisticUpdate(
-    toggleAllOptimisticUpdate,
-  );
-
-  const visibleTodos = useMemo(
-    () =>
-      todos.filter((todo) => {
-        if (route === "/active") return !todo.completed;
-        if (route === "/completed") return todo.completed;
-        return todo;
-      }),
-    [todos, route],
-  );
-
-  const activeTodos = useMemo(
-    () => todos.filter((todo) => !todo.completed),
-    [todos],
-  );
-
+  const { pathname } = useLocation();
   return (
     <>
-      <header className="header" data-testid="header">
-        <h1>todos</h1>
-        <Input
-          onSubmit={(value) => addItem({ title: value })}
-          label="New Todo Input"
-          placeholder="What needs to be done?"
-        />
-      </header>
-      <main className="main" data-testid="main">
-        {visibleTodos.length > 0 ? (
-          <div className="toggle-all-container">
-            <input
-              className="toggle-all"
-              type="checkbox"
-              data-testid="toggle-all"
-              checked={visibleTodos.every((todo) => todo.completed)}
-              onChange={(e) => toggleAll({ completed: e.target.checked })}
-            />
-            <label className="toggle-all-label" htmlFor="toggle-all">
-              Toggle All Input
-            </label>
-          </div>
-        ) : null}
-        <ul className={classnames("todo-list")} data-testid="todo-list">
-          {visibleTodos.map((todo) => (
-            <Item todo={todo} key={todo._id} />
-          ))}
-        </ul>
-      </main>
-      {todos.length > 0 && (
-        <footer className="footer" data-testid="footer">
-          <span className="todo-count">{`${activeTodos.length} ${activeTodos.length === 1 ? "item" : "items"} left!`}</span>
-          <ul className="filters" data-testid="footer-navigation">
-            <li>
-              <a className={classnames({ selected: route === "/" })} href="#/">
-                All
-              </a>
-            </li>
-            <li>
-              <a
-                className={classnames({ selected: route === "/active" })}
-                href="#/active"
-              >
-                Active
-              </a>
-            </li>
-            <li>
-              <a
-                className={classnames({ selected: route === "/completed" })}
-                href="#/completed"
-              >
-                Completed
-              </a>
-            </li>
-          </ul>
-          <button
-            className="clear-completed"
-            disabled={activeTodos.length === todos.length}
-            onClick={() => removeCompleted()}
-          >
-            Clear completed
-          </button>
-        </footer>
-      )}
+      <AuthLoading>
+        <section className="todoapp">
+          <header className="header" data-testid="header">
+            <h1>todos</h1>
+          </header>
+        </section>
+        <div className="auth-loading-container">
+          <SpinnerCircularFixed
+            size={50}
+            thickness={155}
+            speed={146}
+            color="rgba(184, 63, 69, 1)"
+            secondaryColor="rgba(255, 255, 255, 0.12)"
+          />
+        </div>
+      </AuthLoading>
+      <Unauthenticated>
+        <section className="todoapp">
+          <header className="header" data-testid="header">
+            <h1>todos</h1>
+          </header>
+        </section>
+        <div className="login-container">
+          {pathname === "/sign-up" && <SignUp signInUrl="/sign-in" />}
+          {pathname !== "/sign-up" && <SignIn signUpUrl="/sign-up" />}
+        </div>
+      </Unauthenticated>
+      <Authenticated>
+        <Main />
+      </Authenticated>
     </>
   );
 }

@@ -1,10 +1,76 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { QueryCtx, mutation, query } from "./_generated/server";
+import { Id } from "./_generated/dataModel";
 
-export const listItems = query({
-  handler: async (ctx) => {
-    return ctx.db.query("todos").collect();
-  },
+const getCurrentClerkId = async (ctx: QueryCtx) => {
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity || !identity.emailVerified) {
+    throw new Error("Unauthorized");
+  }
+  return identity.subject;
+};
+
+const getUserByClerkId = async (ctx: QueryCtx, clerkId: string) => {
+  return ctx.db
+    .query("users")
+    .withIndex("by_clerkId", (q) => q.eq("clerkId", clerkId))
+    .unique();
+};
+
+const getCurrentUser = async (ctx: QueryCtx) => {
+  const clerkId = await getCurrentClerkId(ctx);
+  const user = await getUserByClerkId(ctx, clerkId);
+  if (!user) {
+    throw new Error("User not found");
+  }
+  return user;
+};
+
+const getUserTodo = async (ctx: QueryCtx, todoId: Id<"todos">) => {
+  const user = await getCurrentUser(ctx);
+  const todo = await ctx.db.get(todoId);
+  if (!todo || todo.userId !== user._id) {
+    throw new Error("Unauthorized");
+  }
+  return todo;
+};
+
+const getUserTodos = async (
+  ctx: QueryCtx,
+  { completed }: { completed?: boolean } = {},
+) => {
+  const user = await getCurrentUser(ctx);
+  if (completed === undefined) {
+    return ctx.db
+      .query("todos")
+      .withIndex("by_userId", (q) => q.eq("userId", user._id))
+      .collect();
+  }
+  return ctx.db
+    .query("todos")
+    .withIndex("by_userId_completed", (q) =>
+      q.eq("userId", user._id).eq("completed", completed),
+    )
+    .collect();
+};
+
+const getCurrentUserQuery = query(async (ctx) => {
+  const clerkId = await getCurrentClerkId(ctx);
+  return getUserByClerkId(ctx, clerkId);
+});
+export { getCurrentUserQuery as getCurrentUser };
+
+export const syncUser = mutation(async (ctx) => {
+  const clerkId = await getCurrentClerkId(ctx);
+  const user = await getUserByClerkId(ctx, clerkId);
+  if (user) {
+    return;
+  }
+  await ctx.db.insert("users", { clerkId });
+});
+
+export const listItems = query(async (ctx) => {
+  return getUserTodos(ctx);
 });
 
 export const addItem = mutation({
@@ -12,7 +78,12 @@ export const addItem = mutation({
     title: v.string(),
   },
   handler: async (ctx, args) => {
-    await ctx.db.insert("todos", { title: args.title, completed: false });
+    const user = await getCurrentUser(ctx);
+    await ctx.db.insert("todos", {
+      userId: user._id,
+      title: args.title,
+      completed: false,
+    });
   },
 });
 
@@ -21,8 +92,8 @@ export const toggleItem = mutation({
     id: v.id("todos"),
   },
   handler: async (ctx, args) => {
-    const todo = await ctx.db.get(args.id);
-    await ctx.db.patch(args.id, { completed: !todo?.completed });
+    const todo = await getUserTodo(ctx, args.id);
+    await ctx.db.patch(todo._id, { completed: !todo?.completed });
   },
 });
 
@@ -32,7 +103,8 @@ export const updateItem = mutation({
     title: v.string(),
   },
   handler: async (ctx, args) => {
-    await ctx.db.patch(args.id, { title: args.title });
+    const todo = await getUserTodo(ctx, args.id);
+    await ctx.db.patch(todo._id, { title: args.title });
   },
 });
 
@@ -41,7 +113,8 @@ export const removeItem = mutation({
     id: v.id("todos"),
   },
   handler: async (ctx, args) => {
-    await ctx.db.delete(args.id);
+    const todo = await getUserTodo(ctx, args.id);
+    await ctx.db.delete(todo._id);
   },
 });
 
@@ -50,7 +123,7 @@ export const toggleAll = mutation({
     completed: v.boolean(),
   },
   handler: async (ctx, args) => {
-    const todos = await ctx.db.query("todos").collect();
+    const todos = await getUserTodos(ctx);
     await Promise.all(
       todos.map((todo) => {
         return ctx.db.patch(todo._id, { completed: args.completed });
@@ -62,7 +135,7 @@ export const toggleAll = mutation({
 export const removeCompleted = mutation({
   args: {},
   handler: async (ctx) => {
-    const todos = await ctx.db.query("todos").collect();
+    const todos = await getUserTodos(ctx, { completed: true });
     await Promise.all(
       todos
         .filter((todo) => todo.completed)
