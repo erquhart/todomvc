@@ -19,7 +19,7 @@ const hasValidMin = (value, min) => {
 
 export function Input({
   onSubmit,
-  placeholder,
+  placeholder = "",
   label,
   defaultValue = "",
   onBlur = () => {},
