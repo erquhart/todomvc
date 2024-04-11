@@ -4,11 +4,12 @@ import { useLocation } from "react-router-dom";
 import { Item } from "./item";
 import classnames from "classnames";
 
-import { TOGGLE_ALL } from "../constants";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 
-export function Main({ todos, dispatch }) {
+export function Main() {
   const { pathname: route } = useLocation();
-
+  const todos = useQuery(api.todo.listItems) || [];
   const visibleTodos = useMemo(
     () =>
       todos.filter((todo) => {
@@ -21,11 +22,7 @@ export function Main({ todos, dispatch }) {
     [todos, route],
   );
 
-  const toggleAll = useCallback(
-    (e) =>
-      dispatch({ type: TOGGLE_ALL, payload: { completed: e.target.checked } }),
-    [dispatch],
-  );
+  const toggleAll = useMutation(api.todo.toggleAll);
 
   return (
     <main className="main" data-testid="main">
@@ -36,7 +33,7 @@ export function Main({ todos, dispatch }) {
             type="checkbox"
             data-testid="toggle-all"
             checked={visibleTodos.every((todo) => todo.completed)}
-            onChange={toggleAll}
+            onChange={(e) => toggleAll({ completed: e.target.checked })}
           />
           <label className="toggle-all-label" htmlFor="toggle-all">
             Toggle All Input
@@ -44,8 +41,8 @@ export function Main({ todos, dispatch }) {
         </div>
       ) : null}
       <ul className={classnames("todo-list")} data-testid="todo-list">
-        {visibleTodos.map((todo, index) => (
-          <Item todo={todo} key={todo.id} dispatch={dispatch} index={index} />
+        {visibleTodos.map((todo) => (
+          <Item todo={todo} key={todo.id} />
         ))}
       </ul>
     </main>
