@@ -4,7 +4,7 @@ import classnames from "classnames";
 import { Input } from "./input";
 
 import { useMutation } from "convex/react";
-import { api } from "../../../convex/_generated/api";
+import { api } from "../convex/_generated/api";
 
 export const Item = memo(function Item({ todo }: { todo: any }) {
   const [isWritable, setIsWritable] = useState(false);
