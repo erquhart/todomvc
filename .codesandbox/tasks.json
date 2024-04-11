@@ -9,6 +9,11 @@
 
   // These tasks can be run from CodeSandbox. Running one will open a log in the app.
   "tasks": {
+    "convex": {
+      "name": "convex",
+      "command": "mkdir -p /root/.convex && echo \\{\\\"accessToken\\\": \\\"$CONVEX_ACCESS_TOKEN\\\" \\} > /root/.convex/config.json && npx convex dev --tail-logs",
+      "runAtStart": true
+    },
     "dev": {
       "name": "dev",
       "command": "npm run dev",

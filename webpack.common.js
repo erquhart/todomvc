@@ -1,4 +1,5 @@
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const webpack = require("webpack");
 const path = require("path");
 
 module.exports = {
@@ -6,6 +7,7 @@ module.exports = {
     app: path.resolve(__dirname, "src", "index.tsx"),
   },
   plugins: [
+    new webpack.EnvironmentPlugin(['CONVEX_DEPLOYMENT', 'CONVEX_URL']),
     new HtmlWebpackPlugin({
       title: "TodoMVC: React",
       template: path.resolve(__dirname, "public", "index.html"),
