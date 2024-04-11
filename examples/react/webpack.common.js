@@ -1,4 +1,5 @@
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const DotenvWebpackPlugin = require("dotenv-webpack");
 const path = require("path");
 
 module.exports = {
@@ -6,6 +7,7 @@ module.exports = {
 		app: path.resolve(__dirname, "src", "index.tsx"),
 	},
 	plugins: [
+		new DotenvWebpackPlugin({ path: path.resolve(__dirname, ".env.local") }),
 		new HtmlWebpackPlugin({
 			title: "TodoMVC: React",
 			template: path.resolve(__dirname, "public", "index.html"),
