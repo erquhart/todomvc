@@ -22,7 +22,7 @@ export const toggleItem = mutation({
   },
   handler: async (ctx, args) => {
     const todo = await ctx.db.get(args.id);
-    await ctx.db.patch(args.id, { completed: !todo.completed });
+    await ctx.db.patch(args.id, { completed: !todo?.completed });
   },
 });
 
@@ -53,7 +53,7 @@ export const toggleAll = mutation({
     const todos = await ctx.db.query("todos").collect();
     await Promise.all(
       todos.map((todo) => {
-        return todo.patch({ completed: args.completed });
+        return ctx.db.patch(todo._id, { completed: args.completed });
       }),
     );
   },

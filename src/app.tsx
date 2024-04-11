@@ -18,9 +18,7 @@ export function App() {
     () =>
       todos.filter((todo) => {
         if (route === "/active") return !todo.completed;
-
         if (route === "/completed") return todo.completed;
-
         return todo;
       }),
     [todos, route],
@@ -58,7 +56,7 @@ export function App() {
         ) : null}
         <ul className={classnames("todo-list")} data-testid="todo-list">
           {visibleTodos.map((todo) => (
-            <Item todo={todo} key={todo.id} />
+            <Item todo={todo} key={todo._id} />
           ))}
         </ul>
       </main>

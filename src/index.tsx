@@ -5,7 +5,7 @@ import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { App } from "./app";
 import "todomvc-app-css/index.css";
 
-const convex = new ConvexReactClient(process.env.CONVEX_URL);
+const convex = new ConvexReactClient(process.env.CONVEX_URL as string);
 
 render(
   <ConvexProvider client={convex}>
