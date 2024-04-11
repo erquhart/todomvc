@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 
-const sanitize = (string) => {
+const sanitize = (string: string) => {
   const map = {
     "&": "&amp;",
     "<": "&lt;",
@@ -10,10 +10,10 @@ const sanitize = (string) => {
     "/": "&#x2F;",
   };
   const reg = /[&<>"'/]/gi;
-  return string.replace(reg, (match) => map[match]);
+  return string.replace(reg, (match) => map[match as keyof typeof map]);
 };
 
-const hasValidMin = (value, min) => {
+const hasValidMin = (value: string, min: number) => {
   return value.length >= min;
 };
 
@@ -23,20 +23,27 @@ export function Input({
   label,
   defaultValue = "",
   onBlur = () => {},
+}: {
+  onSubmit: (value: string) => void;
+  placeholder?: string;
+  label: string;
+  defaultValue?: string;
+  onBlur?: () => void;
 }) {
   const handleBlur = useCallback(() => {
     if (onBlur) onBlur();
   }, [onBlur]);
 
   const handleKeyDown = useCallback(
-    (e) => {
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === "Enter") {
-        const value = e.target.value.trim();
+        const target = e.target as HTMLInputElement;
+        const value = target.value.trim();
 
         if (!hasValidMin(value, 2)) return;
 
         onSubmit(sanitize(value));
-        e.target.value = "";
+        target.value = "";
       }
     },
     [onSubmit],
