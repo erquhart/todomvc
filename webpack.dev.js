@@ -7,6 +7,7 @@ module.exports = merge(common, {
   devServer: {
     static: "./dist",
     allowedHosts: "all",
+    historyApiFallback: true,
   },
   module: {
     rules: [

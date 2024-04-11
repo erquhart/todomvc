@@ -5,5 +5,11 @@ export default defineSchema({
   todos: defineTable({
     title: v.string(),
     completed: v.boolean(),
-  }),
+    userId: v.id("users"),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_userId_completed", ["userId", "completed"]),
+  users: defineTable({
+    clerkId: v.string(),
+  }).index("by_clerkId", ["clerkId"]),
 });
