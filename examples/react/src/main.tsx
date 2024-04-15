@@ -1,37 +1,14 @@
-import { useMutation, useQuery } from "convex/react";
+import { useAction, useMutation, useQuery } from "convex/react";
 import "./app.css";
 import { useLocation } from "react-router-dom";
 import { api } from "../convex/_generated/api";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Input } from "./input";
 import classnames from "classnames";
 import { Item } from "./item";
-import { Id } from "../convex/_generated/dataModel";
 import { OptimisticUpdate } from "convex/browser";
 import { SignOutButton } from "@clerk/clerk-react";
-
-const addItemOptimisticUpdate: OptimisticUpdate<{ title: string }> = (
-  localStore,
-  args,
-) => {
-  const user = localStore.getQuery(api.todo.getCurrentUser);
-  if (!user) {
-    return;
-  }
-  const currentValue = localStore.getQuery(api.todo.listItems);
-  if (currentValue !== undefined) {
-    localStore.setQuery(api.todo.listItems, {}, [
-      ...currentValue,
-      {
-        _id: `${Date.now()}` as Id<"todos">,
-        _creationTime: Date.now(),
-        userId: user._id,
-        title: args.title,
-        completed: false,
-      },
-    ]);
-  }
-};
+import { SpinnerCircularFixed } from "spinners-react";
 
 const removeCompletedOptimisticUpdate: OptimisticUpdate<{}> = (localStore) => {
   const currentValue = localStore.getQuery(api.todo.listItems);
@@ -71,15 +48,21 @@ export function Main() {
   }, []);
 
   const todos = useQuery(api.todo.listItems, user ? {} : "skip") || [];
-  const addItem = useMutation(api.todo.addItem).withOptimisticUpdate(
-    addItemOptimisticUpdate,
-  );
+  const updateList = useAction(api.ai.updateList);
   const removeCompleted = useMutation(
     api.todo.removeCompleted,
   ).withOptimisticUpdate(removeCompletedOptimisticUpdate);
   const toggleAll = useMutation(api.todo.toggleAll).withOptimisticUpdate(
     toggleAllOptimisticUpdate,
   );
+
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleUpdateList = async (value: string) => {
+    setIsUpdating(true);
+    await updateList({ message: value });
+    setIsUpdating(false);
+  };
 
   const visibleTodos = useMemo(
     () =>
@@ -103,9 +86,9 @@ export function Main() {
           <button className="logout-button">sign out</button>
         </SignOutButton>
         <header className="header" data-testid="header">
-          <h1>todos</h1>
+          <h1>todos.ai</h1>
           <Input
-            onSubmit={(value) => addItem({ title: value })}
+            onSubmit={handleUpdateList}
             label="New Todo Input"
             placeholder="What needs to be done?"
           />
@@ -125,7 +108,18 @@ export function Main() {
               </label>
             </div>
           ) : null}
-          <ul className={classnames("todo-list")} data-testid="todo-list">
+          <ul className="todo-list" data-testid="todo-list">
+            {isUpdating && (
+              <div className="todo-list-spinner">
+                <SpinnerCircularFixed
+                  size={50}
+                  thickness={155}
+                  speed={146}
+                  color="rgba(184, 63, 69, 1)"
+                  secondaryColor="rgba(255, 255, 255, 0.12)"
+                />
+              </div>
+            )}
             {visibleTodos.map((todo) => (
               <Item todo={todo} key={todo._id} />
             ))}
@@ -133,6 +127,7 @@ export function Main() {
         </main>
         {todos.length > 0 && (
           <footer className="footer" data-testid="footer">
+            {isUpdating && <div className="todo-list-spinner" />}
             <span className="todo-count">{`${activeTodos.length} ${activeTodos.length === 1 ? "item" : "items"} left!`}</span>
             <ul className="filters" data-testid="footer-navigation">
               <li>

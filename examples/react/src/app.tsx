@@ -28,7 +28,7 @@ export function App() {
       <Unauthenticated>
         <section className="todoapp">
           <header className="header" data-testid="header">
-            <h1>todos</h1>
+            <h1>todos.ai</h1>
           </header>
         </section>
         <div className="login-container">

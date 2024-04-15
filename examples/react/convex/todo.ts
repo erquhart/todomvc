@@ -143,3 +143,31 @@ export const removeCompleted = mutation({
     );
   },
 });
+
+export const listAll = query(async (ctx) => {
+  const user = await getCurrentUser(ctx);
+  return ctx.db
+    .query("todos")
+    .withIndex("by_userId", (q) => q.eq("userId", user._id))
+    .collect();
+});
+
+export const replaceAll = mutation({
+  args: {
+    todos: v.array(v.object({ title: v.string(), completed: v.boolean() })),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    const currentTodos = await getUserTodos(ctx);
+    await Promise.all(currentTodos.map((todo) => ctx.db.delete(todo._id)));
+    await Promise.all(
+      args.todos.map((todo) =>
+        ctx.db.insert("todos", {
+          userId: user._id,
+          title: todo.title,
+          completed: todo.completed,
+        }),
+      ),
+    );
+  },
+});
