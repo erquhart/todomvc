@@ -4,6 +4,7 @@ import { stripIndent } from "common-tags";
 import { action } from "./_generated/server";
 import { v } from "convex/values";
 import { api } from "./_generated/api";
+import { parseInput } from "../util";
 
 const openai = new OpenAI();
 
@@ -67,12 +68,15 @@ export const updateList = action({
     message: v.string(),
   },
   handler: async (ctx, args) => {
+    const message = parseInput(args.message);
+    if (!message) {
+      return;
+    }
     const todos = await ctx.runQuery(api.todo.listAll);
     const response = await chat(
       todos.map((t) => ({ title: t.title, completed: t.completed })),
-      args.message,
+      message,
     );
-    console.log(response);
     await ctx.runMutation(api.todo.replaceAll, { todos: response.list });
   },
 });
