@@ -1,21 +1,5 @@
 import { useCallback } from "react";
-
-const sanitize = (string: string) => {
-  const map = {
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#x27;",
-    "/": "&#x2F;",
-  };
-  const reg = /[&<>"'/]/gi;
-  return string.replace(reg, (match) => map[match as keyof typeof map]);
-};
-
-const hasValidMin = (value: string, min: number) => {
-  return value.length >= min;
-};
+import { parseInput } from "../util";
 
 export function Input({
   onSubmit,
@@ -40,9 +24,11 @@ export function Input({
         const target = e.target as HTMLInputElement;
         const value = target.value.trim();
 
-        if (!hasValidMin(value, 2)) return;
-
-        onSubmit(sanitize(value));
+        const parsedInput = parseInput(value);
+        if (!parsedInput) {
+          return;
+        }
+        onSubmit(parsedInput);
         target.value = "";
       }
     },
