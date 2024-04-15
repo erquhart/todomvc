@@ -45,3 +45,22 @@ but useful for people who use screen readers */
 .auth-loading-container {
   padding-top: 8rem;
 }
+
+.todo-list,
+.footer {
+  position: relative;
+}
+
+.todo-list-spinner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f5f5f5;
+  opacity: 0.5;
+  z-index: 1000;
+}
