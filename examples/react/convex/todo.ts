@@ -1,6 +1,21 @@
 import { v } from "convex/values";
-import { QueryCtx, mutation, query } from "./_generated/server";
+import {
+  QueryCtx,
+  internalMutation,
+  internalQuery,
+  mutation,
+  query,
+} from "./_generated/server";
 import { Id } from "./_generated/dataModel";
+
+export const getUserById = internalQuery({
+  args: {
+    id: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    return ctx.db.get(args.id);
+  },
+});
 
 const getCurrentClerkId = async (ctx: QueryCtx) => {
   const identity = await ctx.auth.getUserIdentity();
@@ -54,9 +69,13 @@ const getUserTodos = async (
     .collect();
 };
 
-const getCurrentUserQuery = query(async (ctx) => {
+const getCurrentUserQuery = query(async (ctx, args) => {
   const clerkId = await getCurrentClerkId(ctx);
-  return getUserByClerkId(ctx, clerkId);
+  const user = await getUserByClerkId(ctx, clerkId);
+  const backgroundImageUrl =
+    user?.backgroundImageStorageId &&
+    (await ctx.storage.getUrl(user.backgroundImageStorageId));
+  return { ...user, backgroundImageUrl };
 });
 export { getCurrentUserQuery as getCurrentUser };
 
@@ -169,5 +188,17 @@ export const replaceAll = mutation({
         }),
       ),
     );
+  },
+});
+
+export const updateUserBackground = internalMutation({
+  args: {
+    userId: v.id("users"),
+    storageId: v.id("_storage"),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.userId, {
+      backgroundImageStorageId: args.storageId,
+    });
   },
 });

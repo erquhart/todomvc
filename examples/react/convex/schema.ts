@@ -11,5 +11,6 @@ export default defineSchema({
     .index("by_userId_completed", ["userId", "completed"]),
   users: defineTable({
     clerkId: v.string(),
+    backgroundImageStorageId: v.optional(v.id("_storage")),
   }).index("by_clerkId", ["clerkId"]),
 });
