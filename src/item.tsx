@@ -6,66 +6,43 @@ import { Input } from "./input";
 import { useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { OptimisticUpdate } from "convex/browser";
-import { Id } from "../convex/_generated/dataModel";
+import { Doc, Id } from "../convex/_generated/dataModel";
+import { useShareId } from "./util";
 
-const toggleItemOptimisticUpdate: OptimisticUpdate<{ id: Id<"todos"> }> = (
-  localStore,
-  args,
-) => {
-  const currentValue = localStore.getQuery(api.todo.listItems);
-  if (currentValue !== undefined) {
-    localStore.setQuery(
-      api.todo.listItems,
-      {},
-      currentValue.map((todo) =>
-        todo._id === args.id ? { ...todo, completed: !todo.completed } : todo,
-      ),
-    );
-  }
-};
-
-const removeItemOptimisticUpdate: OptimisticUpdate<{ id: Id<"todos"> }> = (
-  localStore,
-  args,
-) => {
-  const currentValue = localStore.getQuery(api.todo.listItems);
-  if (currentValue !== undefined) {
-    localStore.setQuery(
-      api.todo.listItems,
-      {},
-      currentValue.filter((todo) => todo._id !== args.id),
-    );
-  }
-};
-
-const updateItemOptimisticUpdate: OptimisticUpdate<{
-  id: Id<"todos">;
-  title: string;
-}> = (localStore, args) => {
-  const currentValue = localStore.getQuery(api.todo.listItems);
-  if (currentValue !== undefined) {
-    localStore.setQuery(
-      api.todo.listItems,
-      {},
-      currentValue.map((todo) =>
-        todo._id === args.id ? { ...todo, title: args.title } : todo,
-      ),
-    );
-  }
+const listTodosOptimisticUpdate = (
+  listId: Id<"lists">,
+  updateList: (currentValue: Doc<"todos">[], id: Id<"todos">) => Doc<"todos">[],
+): OptimisticUpdate<{ id: Id<"todos">; shareId?: string }> => {
+  return (localStore, args) => {
+    const currentValue = localStore.getQuery(api.todo.listTodos, {
+      listId,
+      shareId: args.shareId,
+    });
+    if (currentValue !== undefined) {
+      localStore.setQuery(
+        api.todo.listTodos,
+        { listId, shareId: args.shareId },
+        updateList(currentValue, args.id),
+      );
+    }
+  };
 };
 
 export const Item = memo(function Item({ todo }: { todo: any }) {
+  const shareId = useShareId();
   const [isWritable, setIsWritable] = useState(false);
 
   const toggleItem = useMutation(api.todo.toggleItem).withOptimisticUpdate(
-    toggleItemOptimisticUpdate,
+    listTodosOptimisticUpdate(todo.listId, (todos, id) =>
+      todos.map((t) => (t._id === id ? { ...t, completed: !t.completed } : t)),
+    ),
   );
   const removeItem = useMutation(api.todo.removeItem).withOptimisticUpdate(
-    removeItemOptimisticUpdate,
+    listTodosOptimisticUpdate(todo.listId, (todos, id) =>
+      todos.filter((todo) => todo._id !== id),
+    ),
   );
-  const updateItem = useMutation(api.todo.updateItem).withOptimisticUpdate(
-    updateItemOptimisticUpdate,
-  );
+  const updateItem = useMutation(api.todo.updateItem);
 
   const handleDoubleClick = useCallback(() => {
     setIsWritable(true);
@@ -78,7 +55,7 @@ export const Item = memo(function Item({ todo }: { todo: any }) {
   const handleUpdate = useCallback(
     (title: string) => {
       if (title.length === 0) removeItem({ id: todo._id });
-      else updateItem({ id: todo._id, title });
+      else updateItem({ id: todo._id, title, shareId });
 
       setIsWritable(false);
     },
@@ -105,7 +82,7 @@ export const Item = memo(function Item({ todo }: { todo: any }) {
               type="checkbox"
               data-testid="todo-item-toggle"
               checked={todo.completed}
-              onChange={() => toggleItem({ id: todo._id })}
+              onChange={() => toggleItem({ id: todo._id, shareId })}
             />
             <label
               data-testid="todo-item-label"
@@ -116,7 +93,7 @@ export const Item = memo(function Item({ todo }: { todo: any }) {
             <button
               className="destroy"
               data-testid="todo-item-button"
-              onClick={() => removeItem({ id: todo._id })}
+              onClick={() => removeItem({ id: todo._id, shareId })}
             />
           </>
         )}

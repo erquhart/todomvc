@@ -9,27 +9,39 @@ import { Item } from "./item";
 import { OptimisticUpdate } from "convex/browser";
 import { SignOutButton } from "@clerk/clerk-react";
 import { SpinnerCircularFixed } from "spinners-react";
+import { useShareId } from "./util";
+import { Id } from "../convex/_generated/dataModel";
 
-const removeCompletedOptimisticUpdate: OptimisticUpdate<{}> = (localStore) => {
-  const currentValue = localStore.getQuery(api.todo.listItems);
+const removeCompletedOptimisticUpdate: OptimisticUpdate<{
+  listId: Id<"lists">;
+  shareId?: string;
+}> = (localStore, args) => {
+  const currentValue = localStore.getQuery(api.todo.listTodos, {
+    listId: args.listId,
+    shareId: args.shareId,
+  });
   if (currentValue !== undefined) {
     localStore.setQuery(
-      api.todo.listItems,
-      {},
+      api.todo.listTodos,
+      { listId: args.listId, shareId: args.shareId },
       currentValue.filter((todo) => !todo.completed),
     );
   }
 };
 
-const toggleAllOptimisticUpdate: OptimisticUpdate<{ completed: boolean }> = (
-  localStore,
-  args,
-) => {
-  const currentValue = localStore.getQuery(api.todo.listItems);
+const toggleAllOptimisticUpdate: OptimisticUpdate<{
+  listId: Id<"lists">;
+  shareId?: string;
+  completed: boolean;
+}> = (localStore, args) => {
+  const currentValue = localStore.getQuery(api.todo.listTodos, {
+    listId: args.listId,
+    shareId: args.shareId,
+  });
   if (currentValue !== undefined) {
     localStore.setQuery(
-      api.todo.listItems,
-      {},
+      api.todo.listTodos,
+      { listId: args.listId, shareId: args.shareId },
       currentValue.map((todo) => ({
         ...todo,
         completed: args.completed,
@@ -40,22 +52,25 @@ const toggleAllOptimisticUpdate: OptimisticUpdate<{ completed: boolean }> = (
 
 export function Main() {
   const { hash } = useLocation();
+  const shareId = useShareId();
   const syncUser = useMutation(api.todo.syncUser);
-  const user = useQuery(api.todo.getCurrentUser, {
-    includeBackgroundImage: true,
-  });
+  const list = useQuery(api.todo.getList, { shareId });
 
   useEffect(() => {
     syncUser();
   }, []);
 
   useEffect(() => {
-    if (user?.backgroundImageStorageId) {
-      document.documentElement.style.backgroundImage = `url('${user.backgroundImageUrl}')`;
+    if (list?.backgroundImageStorageId) {
+      document.documentElement.style.backgroundImage = `url('${list.backgroundImageUrl}')`;
     }
-  }, [user]);
+  }, [list]);
 
-  const todos = useQuery(api.todo.listItems, user ? {} : "skip") || [];
+  const todos =
+    useQuery(
+      api.todo.listTodos,
+      list?._id ? { listId: list._id, shareId } : "skip",
+    ) || [];
   const updateList = useAction(api.ai.updateList);
   const removeCompleted = useMutation(
     api.todo.removeCompleted,
@@ -64,32 +79,53 @@ export function Main() {
     toggleAllOptimisticUpdate,
   );
 
+  console.log("todos", todos);
+
+  const visibleTodos = useMemo(() => {
+    console.log(0, todos);
+    return todos.filter((todo) => {
+      if (hash === "#/active") return !todo.completed;
+      if (hash === "#/completed") return todo.completed;
+      return todo;
+    });
+  }, [todos, hash]);
+
+  const activeTodos = useMemo(() => {
+    console.log(1, todos);
+    return todos.filter((todo) => !todo.completed);
+  }, [todos]);
+
   const [isUpdating, setIsUpdating] = useState(false);
 
   const handleUpdateList = async (value: string) => {
+    if (!list?._id) {
+      return;
+    }
     setIsUpdating(true);
-    await updateList({ message: value });
+    await updateList({ message: value, listId: list?._id, shareId });
     setIsUpdating(false);
   };
 
-  const visibleTodos = useMemo(
-    () =>
-      todos.filter((todo) => {
-        if (hash === "#/active") return !todo.completed;
-        if (hash === "#/completed") return todo.completed;
-        return todo;
-      }),
-    [todos, hash],
-  );
+  const handleToggleAll = async (completed: boolean) => {
+    if (!list?._id) {
+      return;
+    }
+    await toggleAll({ listId: list._id, completed, shareId });
+  };
 
-  const activeTodos = useMemo(
-    () => todos.filter((todo) => !todo.completed),
-    [todos],
-  );
+  const handleRemoveCompleted = async () => {
+    if (!list?._id) {
+      return;
+    }
+    await removeCompleted({ listId: list._id, shareId });
+  };
 
   return (
     <>
       <section className="todoapp">
+        <a className="share-link" href={`/share/${list?.shareId}`}>
+          share link
+        </a>
         <SignOutButton>
           <button className="logout-button">sign out</button>
         </SignOutButton>
@@ -109,7 +145,7 @@ export function Main() {
                 type="checkbox"
                 data-testid="toggle-all"
                 checked={visibleTodos.every((todo) => todo.completed)}
-                onChange={(e) => toggleAll({ completed: e.target.checked })}
+                onChange={(e) => handleToggleAll(e.target.checked)}
               />
               <label className="toggle-all-label" htmlFor="toggle-all">
                 Toggle All Input
@@ -166,7 +202,7 @@ export function Main() {
             <button
               className="clear-completed"
               disabled={activeTodos.length === todos.length}
-              onClick={() => removeCompleted()}
+              onClick={handleRemoveCompleted}
             >
               Clear completed
             </button>
