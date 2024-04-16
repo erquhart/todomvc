@@ -41,11 +41,19 @@ const toggleAllOptimisticUpdate: OptimisticUpdate<{ completed: boolean }> = (
 export function Main() {
   const { hash } = useLocation();
   const syncUser = useMutation(api.todo.syncUser);
-  const user = useQuery(api.todo.getCurrentUser);
+  const user = useQuery(api.todo.getCurrentUser, {
+    includeBackgroundImage: true,
+  });
 
   useEffect(() => {
     syncUser();
   }, []);
+
+  useEffect(() => {
+    if (user?.backgroundImageStorageId) {
+      document.documentElement.style.backgroundImage = `url('${user.backgroundImageUrl}')`;
+    }
+  }, [user]);
 
   const todos = useQuery(api.todo.listItems, user ? {} : "skip") || [];
   const updateList = useAction(api.ai.updateList);
