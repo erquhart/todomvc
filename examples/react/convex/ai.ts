@@ -108,22 +108,22 @@ const storeBackgroundImage = async (ctx: ActionCtx, imageUrl: string) => {
 
 export const updateBackgroundImage = internalAction({
   args: {
-    userId: v.id("users"),
+    listId: v.id("lists"),
     todos: v.array(v.object({ title: v.string(), completed: v.boolean() })),
   },
   handler: async (ctx, args) => {
-    const user = await ctx.runQuery(internal.todo.getUserById, {
-      id: args.userId,
+    const list = await ctx.runQuery(internal.todo.getListById, {
+      listId: args.listId,
     });
-    if (!user) {
+    if (!list) {
       return;
     }
-    const previousStorageId = user.backgroundImageStorageId;
+    const previousStorageId = list.backgroundImageStorageId;
     const backgroundImage = await getBackgroundImage(args.todos);
     if (backgroundImage) {
       const storageId = await storeBackgroundImage(ctx, backgroundImage);
-      await ctx.runMutation(internal.todo.updateUserBackground, {
-        userId: args.userId,
+      await ctx.runMutation(internal.todo.updateListBackground, {
+        listId: args.listId,
         storageId,
       });
     }
@@ -136,24 +136,29 @@ export const updateBackgroundImage = internalAction({
 export const updateList = action({
   args: {
     message: v.string(),
+    listId: v.id("lists"),
+    shareId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const user = await ctx.runQuery(api.todo.getCurrentUser, {});
-    if (!user._id) {
-      return;
-    }
     const message = parseInput(args.message);
     if (!message) {
       return;
     }
-    const todos = await ctx.runQuery(api.todo.listAll);
+    const todos = await ctx.runQuery(api.todo.listTodos, {
+      listId: args.listId,
+      shareId: args.shareId,
+    });
     const response = await chat(
       todos.map((t) => ({ title: t.title, completed: t.completed })),
       message,
     );
-    await ctx.runMutation(api.todo.replaceAll, { todos: response.list });
+    await ctx.runMutation(api.todo.replaceAll, {
+      listId: args.listId,
+      shareId: args.shareId,
+      todos: response.list,
+    });
     await ctx.scheduler.runAfter(0, internal.ai.updateBackgroundImage, {
-      userId: user._id,
+      listId: args.listId,
       todos: response.list,
     });
   },
