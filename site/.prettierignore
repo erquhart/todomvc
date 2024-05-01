@@ -1,0 +1,15 @@
+dist
+node_modules
+*.log
+.env
+cache.json
+*.local
+.expo-shared
+.expo
+.git
+.netlify
+.assets
+.vscode
+
+# Convex
+convex/_generated

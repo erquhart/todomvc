@@ -1,0 +1,36 @@
+---
+import Layout from '../layouts/Layout.astro'
+import Card from '../components/Card.astro'
+import { Navbar } from '../components/Navbar.tsx'
+---
+
+<Layout title="Welcome to Astro.">
+  <main>
+    <Navbar />
+    <div class="flex gap-4">
+      <iframe
+        src="https://codesandbox.io/p/github/erquhart/todomvc/demo-step-1?embed=1&file=%2Fsrc%2Ftodo%2Freducer.ts&showConsole=true&workspaceId=ffc726a1-d545-49d8-aa11-f0580b0e1616&previewwindow=browser&view=preview"
+        class="w-full h-[1100px] border-0 rounded-md overflow-hidden"
+        title="erquhart/todomvc/demo-step-1"
+        allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+        sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+      ></iframe>
+      <iframe
+        src="https://codesandbox.io/p/github/erquhart/todomvc/demo-step-3?file=%2Fsrc%2Ftodo%2Fapp.tsx&embed=1&layout=%257B%2522sidebarPanel%2522%253A%2522EXPLORER%2522%252C%2522rootPanelGroup%2522%253A%257B%2522direction%2522%253A%2522vertical%2522%252C%2522contentType%2522%253A%2522UNKNOWN%2522%252C%2522type%2522%253A%2522PANEL_GROUP%2522%252C%2522id%2522%253A%2522ROOT_LAYOUT%2522%252C%2522panels%2522%253A%255B%257B%2522type%2522%253A%2522PANEL_GROUP%2522%252C%2522contentType%2522%253A%2522UNKNOWN%2522%252C%2522direction%2522%253A%2522horizontal%2522%252C%2522id%2522%253A%2522clvmt7frf004b3b6jeqpnbz8n%2522%252C%2522sizes%2522%253A%255B50%252C50%255D%252C%2522panels%2522%253A%255B%257B%2522type%2522%253A%2522PANEL_GROUP%2522%252C%2522contentType%2522%253A%2522EDITOR%2522%252C%2522direction%2522%253A%2522horizontal%2522%252C%2522id%2522%253A%2522EDITOR%2522%252C%2522panels%2522%253A%255B%257B%2522type%2522%253A%2522PANEL%2522%252C%2522contentType%2522%253A%2522EDITOR%2522%252C%2522id%2522%253A%2522clvmt7frf00483b6jv2n817l3%2522%257D%255D%257D%252C%257B%2522type%2522%253A%2522PANEL_GROUP%2522%252C%2522contentType%2522%253A%2522DEVTOOLS%2522%252C%2522direction%2522%253A%2522vertical%2522%252C%2522id%2522%253A%2522DEVTOOLS%2522%252C%2522panels%2522%253A%255B%257B%2522type%2522%253A%2522PANEL%2522%252C%2522contentType%2522%253A%2522DEVTOOLS%2522%252C%2522id%2522%253A%2522clvmt7frf00493b6jqk5wns5c%2522%257D%255D%252C%2522sizes%2522%253A%255B100%255D%257D%255D%257D%252C%257B%2522type%2522%253A%2522PANEL_GROUP%2522%252C%2522contentType%2522%253A%2522SHELLS%2522%252C%2522direction%2522%253A%2522horizontal%2522%252C%2522id%2522%253A%2522SHELLS%2522%252C%2522panels%2522%253A%255B%257B%2522type%2522%253A%2522PANEL%2522%252C%2522contentType%2522%253A%2522SHELLS%2522%252C%2522id%2522%253A%2522clvmt7frf004a3b6jv8nh3acp%2522%257D%252C%257B%2522type%2522%253A%2522PANEL%2522%252C%2522contentType%2522%253A%2522SHELLS%2522%252C%2522id%2522%253A%2522clvmt7icy00663b6jfysx9wf9%2522%257D%252C%257B%2522type%2522%253A%2522PANEL%2522%252C%2522contentType%2522%253A%2522SHELLS%2522%252C%2522id%2522%253A%2522clvmt7ixq008q3b6j8imp6q51%2522%257D%255D%252C%2522sizes%2522%253A%255B33.333333333333336%252C33.333333333333336%252C33.333333333333336%255D%257D%255D%252C%2522sizes%2522%253A%255B80.74074074074073%252C19.259259259259267%255D%257D%252C%2522tabbedPanels%2522%253A%257B%2522clvmt7frf00483b6jv2n817l3%2522%253A%257B%2522id%2522%253A%2522clvmt7frf00483b6jv2n817l3%2522%252C%2522activeTabId%2522%253A%2522clvmt75px00013b6j7fhi4pxb%2522%252C%2522tabs%2522%253A%255B%257B%2522id%2522%253A%2522clvmt75px00013b6j7fhi4pxb%2522%252C%2522mode%2522%253A%2522permanent%2522%252C%2522type%2522%253A%2522FILE%2522%252C%2522filepath%2522%253A%2522%252Fsrc%252Findex.tsx%2522%252C%2522state%2522%253A%2522IDLE%2522%252C%2522initialSelections%2522%253A%255B%257B%2522startLineNumber%2522%253A7%252C%2522startColumn%2522%253A1%252C%2522endLineNumber%2522%253A7%252C%2522endColumn%2522%253A1%257D%255D%257D%252C%257B%2522type%2522%253A%2522FILE%2522%252C%2522filepath%2522%253A%2522%252Froot%252F.convex%252Fconfig.json%2522%252C%2522id%2522%253A%2522clvmvpqrt00673b6j0pl8954z%2522%252C%2522mode%2522%253A%2522temporary%2522%252C%2522state%2522%253A%2522IDLE%2522%257D%255D%257D%252C%2522clvmt7frf00493b6jqk5wns5c%2522%253A%257B%2522id%2522%253A%2522clvmt7frf00493b6jqk5wns5c%2522%252C%2522activeTabId%2522%253A%2522clvmvqwiw00483b6jtn9gplrg%2522%252C%2522tabs%2522%253A%255B%257B%2522type%2522%253A%2522UNASSIGNED_PORT%2522%252C%2522port%2522%253A8080%252C%2522id%2522%253A%2522clvmvqwiw00483b6jtn9gplrg%2522%252C%2522mode%2522%253A%2522permanent%2522%252C%2522path%2522%253A%2522%252F%2522%257D%255D%257D%252C%2522clvmt7frf004a3b6jv8nh3acp%2522%253A%257B%2522id%2522%253A%2522clvmt7frf004a3b6jv8nh3acp%2522%252C%2522activeTabId%2522%253A%2522clvmt75py00033b6jrc4fsi9o%2522%252C%2522tabs%2522%253A%255B%257B%2522id%2522%253A%2522clvmt75py00033b6jrc4fsi9o%2522%252C%2522mode%2522%253A%2522permanent%2522%252C%2522type%2522%253A%2522TERMINAL%2522%252C%2522shellId%2522%253A%2522clvmt76bh00zkdkf1fawm2kvw%2522%257D%252C%257B%2522type%2522%253A%2522TASK_LOG%2522%252C%2522taskId%2522%253A%2522CSB_RUN_OUTSIDE_CONTAINER%253D1%2520devcontainer%2520templates%2520apply%2520--template-id%2520%255C%2522ghcr.io%252Fdevcontainers%252Ftemplates%252Ftypescript-node%255C%2522%2520--template-args%2520%27%257B%257D%27%2520--features%2520%27%255B%255D%27%2522%252C%2522id%2522%253A%2522clvmu1lzc003p3b6jn4o1z471%2522%252C%2522mode%2522%253A%2522permanent%2522%257D%255D%257D%252C%2522clvmt7icy00663b6jfysx9wf9%2522%253A%257B%2522tabs%2522%253A%255B%257B%2522id%2522%253A%2522clvmt7g6r00643b6jfqe8wep8%2522%252C%2522mode%2522%253A%2522permanent%2522%252C%2522type%2522%253A%2522TERMINAL%2522%252C%2522shellId%2522%253A%2522clvmt7ih100zrdkf153ry1gdr%2522%257D%255D%252C%2522id%2522%253A%2522clvmt7icy00663b6jfysx9wf9%2522%252C%2522activeTabId%2522%253A%2522clvmt7g6r00643b6jfqe8wep8%2522%257D%252C%2522clvmt7ixq008q3b6j8imp6q51%2522%253A%257B%2522tabs%2522%253A%255B%257B%2522id%2522%253A%2522clvmt7irj008o3b6ju6taw1v3%2522%252C%2522mode%2522%253A%2522permanent%2522%252C%2522type%2522%253A%2522TERMINAL%2522%252C%2522shellId%2522%253A%2522clvmt7j0v00zsdkf1344k9msn%2522%257D%255D%252C%2522id%2522%253A%2522clvmt7ixq008q3b6j8imp6q51%2522%252C%2522activeTabId%2522%253A%2522clvmt7irj008o3b6ju6taw1v3%2522%257D%257D%252C%2522showDevtools%2522%253Atrue%252C%2522showShells%2522%253Atrue%252C%2522showSidebar%2522%253Atrue%252C%2522sidebarPanelSize%2522%253A10%257D"
+        class="w-full h-[1100px] border-0 rounded-md overflow-hidden"
+        title="erquhart/todomvc/demo-step-1"
+        allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+        sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+      ></iframe>
+      {
+        /*
+
+      <iframe
+        src="https://3zq6dw-8080.csb.app/"
+        class="w-full h-[1100px] border-0 rounded-md overflow-hidden"
+        title="erquhart/todomvc/demo-step-1"></iframe>
+      */
+      }
+    </div>
+  </main>
+</Layout>
