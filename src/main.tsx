@@ -55,6 +55,7 @@ export function Main() {
   const shareId = useShareId();
   const syncUser = useMutation(api.todo.syncUser);
   const list = useQuery(api.todo.getList, { shareId });
+  console.log('list', list)
 
   useEffect(() => {
     syncUser();
@@ -79,10 +80,7 @@ export function Main() {
     toggleAllOptimisticUpdate,
   );
 
-  console.log("todos", todos);
-
   const visibleTodos = useMemo(() => {
-    console.log(0, todos);
     return todos.filter((todo) => {
       if (hash === "#/active") return !todo.completed;
       if (hash === "#/completed") return todo.completed;
@@ -91,18 +89,21 @@ export function Main() {
   }, [todos, hash]);
 
   const activeTodos = useMemo(() => {
-    console.log(1, todos);
     return todos.filter((todo) => !todo.completed);
   }, [todos]);
 
   const [isUpdating, setIsUpdating] = useState(false);
 
   const handleUpdateList = async (value: string) => {
+    console.log(0)
     if (!list?._id) {
+      console.log(1)
       return;
     }
+    console.log(2)
     setIsUpdating(true);
     await updateList({ message: value, listId: list?._id, shareId });
+    console.log(3)
     setIsUpdating(false);
   };
 
